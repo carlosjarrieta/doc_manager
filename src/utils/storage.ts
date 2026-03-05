@@ -22,6 +22,7 @@ export async function uploadToSpaces(file: File, documentId: string): Promise<st
     });
 
 
+    const buffer = await file.arrayBuffer();
     
     // Extremely important: Sanitize the content type string to ensure no weird characters break the Header constructor
     let safeContentType = file.type;
@@ -35,10 +36,8 @@ export async function uploadToSpaces(file: File, documentId: string): Promise<st
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: fileName,
-      // Pass the raw File object directly instead of doing Uint8Array(buffer).
-      // AWS SDK v3 in the browser is much happier handling Blob/File objects directly 
-      // than ArrayBuffers when constructing fetch requests.
-      Body: file, 
+      // Usar ArrayBuffer/Blob para evitar el error de getReader en el navegador
+      Body: new Blob([buffer], { type: safeContentType }), 
       ACL: "public-read",
       ContentType: safeContentType,
     });
