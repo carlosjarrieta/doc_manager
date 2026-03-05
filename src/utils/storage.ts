@@ -7,7 +7,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 const s3Client = new S3Client({
   endpoint: import.meta.env.VITE_DO_ENDPOINT || "https://nyc3.digitaloceanspaces.com",
-  region: import.meta.env.VITE_DO_REGION || "nyc3",
+  region: import.meta.env.VITE_DO_REGION || "us-east-1",
   forcePathStyle: false,
   credentials: {
     accessKeyId: import.meta.env.VITE_DO_ACCESS_KEY || "",
