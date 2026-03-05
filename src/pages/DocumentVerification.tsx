@@ -19,27 +19,6 @@ const DocumentVerification = () => {
         if (docRecord) {
           setRecord(docRecord);
           setData(docRecord.data);
-        } else if (documentId === 'DOC-DEMO123') {
-          // Fallback mock data if accessed directly for demo and server DB has no matching ID
-          setData({
-            diocesis: 'Diócesis de Magangué',
-            parroquia: 'Ntra Señora del Perpetuo Socorro y Jesus Nazareno',
-            lugar_registro: 'Cascajal, Bolívar - Colombia',
-            libro: '0005',
-            folio: '0282',
-            numero: '0697',
-            nombres: 'Abel Jose',
-            apellidos: 'Gutierrez Correa',
-            fecha_nacimiento: '2011-11-13',
-            lugar_nacimiento: 'Cundinamarca, Bogota, Colombia',
-            fecha_bautismo: '2013-01-01',
-            padre: 'Abel Antonio Gutierrez Nuñez',
-            madre: 'Gloria Maria Correa T.',
-            padrinos: 'Orlando Correa Turizo - Yanine Esther Correa Turizo',
-            ministro: 'José Libardo Morales Acuña',
-            status: 'VERIFICADO',
-            createdAt: new Date().toISOString()
-          });
         }
       }
       setLoading(false);

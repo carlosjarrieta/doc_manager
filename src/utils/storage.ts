@@ -32,12 +32,13 @@ export async function uploadToSpaces(file: File, documentId: string): Promise<st
 
   try {
     await s3Client.send(command);
-    // Generate the public URL: https://bucket.region.digitaloceanspaces.com/key
-    const endpoint = import.meta.env.VITE_DO_ENDPOINT || "https://nyc3.digitaloceanspaces.com";
+    // Para Digital Ocean Spaces el formato es: https://bucket.region.digitaloceanspaces.com/key
+    // O si el endpoint ya incluye el region: https://bucket.endpoint/key
+    const endpoint = import.meta.env.VITE_DO_ENDPOINT || "nyc3.digitaloceanspaces.com";
     const cleanEndpoint = endpoint.replace('https://', '');
     return `https://${bucketName}.${cleanEndpoint}/${fileName}`;
   } catch (error) {
-    console.error("Error uploading to Digital Ocean Spaces:", error);
+    console.error("Error real de subida a DO:", error);
     throw error;
   }
 }
