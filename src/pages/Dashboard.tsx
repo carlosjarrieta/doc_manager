@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Download, QrCode, Link as LinkIcon, Star, Eye, X, Check } from 'lucide-react';
+import { FileText, Download, QrCode, Link as LinkIcon, Star, Eye, X, Check, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { listDocuments, DocumentRecord } from '../utils/db';
+import { listDocuments, deleteDocument, DocumentRecord } from '../utils/db';
 import { useSearch } from '../App';
 
 const Dashboard = () => {
@@ -52,6 +52,13 @@ const Dashboard = () => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este registro?')) {
+      await deleteDocument(id);
+      setDocuments(prev => prev.filter(doc => doc.id !== id));
+    }
   };
 
   return (
@@ -137,7 +144,14 @@ const Dashboard = () => {
                       <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                       <span className="text-[var(--color-primary)]">{doc.id.split('-')[1]}</span>
                     </div>
-                    <button className="text-slate-300 hover:text-yellow-400 transition-colors">
+                    <button 
+                      onClick={() => handleDelete(doc.id)}
+                      className="text-slate-300 hover:text-red-500 transition-colors p-1"
+                      title="Eliminar registro"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <button className="text-slate-300 hover:text-yellow-400 transition-colors p-1">
                       <Star className={`w-4 h-4 ${i === 0 ? 'fill-yellow-400 text-yellow-400' : ''}`} />
                     </button>
                   </div>

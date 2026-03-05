@@ -93,3 +93,16 @@ export async function listDocuments(): Promise<DocumentRecord[]> {
     return [];
   }
 }
+export async function deleteDocument(documentId: string) {
+  if (!import.meta.env.VITE_KV_REST_API_URL) {
+    localStorage.removeItem(`doc_${documentId}`);
+    return;
+  }
+
+  try {
+    await kv.del(`doc_${documentId}`);
+  } catch (error) {
+    console.error("Error deleting from Vercel KV:", error);
+    throw new Error("Failed to delete the document");
+  }
+}
