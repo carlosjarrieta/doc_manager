@@ -105,45 +105,12 @@ const Dashboard = () => {
           {filteredDocuments.map((doc, i) => {
             if (!doc?.data) return null;
             return (
-              <div key={doc.id} className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col hover:-translate-y-1">
-                <div className="relative aspect-[4/5] bg-slate-100 overflow-hidden cursor-pointer" onClick={() => setSelectedDoc(doc)}>
-                  <div className={`absolute inset-0 transition-transform duration-700 opacity-20 flex items-center justify-center`}>
-                    <FileText className="w-24 h-24 text-slate-400" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent"></div>
-                  
-                  <div className="absolute top-4 left-4">
-                    <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-[9px] font-black text-slate-800 uppercase tracking-tighter shadow-sm border border-white/20">
-                      Verificado
-                    </div>
-                  </div>
-
-                  <div className="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    <p className="text-[10px] font-black text-white/90 mb-1 uppercase tracking-widest pl-1">Partida de Bautismo</p>
-                    <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-xl shadow-xl border border-white/20">
-                      <p className="text-sm font-black text-slate-800 leading-tight truncate">
-                        {doc.data.nombres} {doc.data.apellidos}
-                      </p>
-                      <p className="text-[10px] text-slate-500 font-bold mt-1 truncate">
-                        {doc.data.parroquia}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="bg-white text-slate-900 w-12 h-12 rounded-full flex items-center justify-center shadow-2xl scale-50 group-hover:scale-100 transition-transform duration-300">
-                      <Eye className="w-6 h-6" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-5 flex-1 flex flex-col">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                      <span>{timeAgo(doc.createdAt)}</span>
-                      <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                      <span className="text-[var(--color-primary)]">{doc.id.split('-')[1]}</span>
-                    </div>
+              <div key={doc.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col group hover:-translate-y-0.5">
+                <div className="p-4 flex-1 flex flex-col relative">
+                  <div className="absolute top-3 right-3 flex gap-1 z-10">
+                    <button className="text-slate-300 hover:text-yellow-400 transition-colors p-1">
+                      <Star className={`w-4 h-4 ${i === 0 ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                    </button>
                     <button 
                       onClick={() => handleDelete(doc.id)}
                       className="text-slate-300 hover:text-red-500 transition-colors p-1"
@@ -151,36 +118,56 @@ const Dashboard = () => {
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                    <button className="text-slate-300 hover:text-yellow-400 transition-colors p-1">
-                      <Star className={`w-4 h-4 ${i === 0 ? 'fill-yellow-400 text-yellow-400' : ''}`} />
-                    </button>
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="flex items-center gap-3 mb-3 pr-16" onClick={() => setSelectedDoc(doc)}>
+                    <div className="w-10 h-10 rounded-lg bg-[var(--color-primary-10)] text-[var(--color-primary)] flex items-center justify-center shrink-0 cursor-pointer">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="cursor-pointer flex-1 min-w-0">
+                      <p className="text-[10px] font-black text-slate-400 mb-0.5 uppercase tracking-widest leading-none">Partida de Bautismo</p>
+                      <p className="text-sm font-black text-slate-800 leading-tight truncate">
+                        {doc.data.nombres} {doc.data.apellidos}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-lg p-3 mb-4 flex-1 border border-slate-100 cursor-pointer" onClick={() => setSelectedDoc(doc)}>
+                    <p className="text-[11px] text-slate-500 font-medium line-clamp-2 leading-relaxed">
+                      <span className="font-bold text-slate-700">Parroquia:</span> {doc.data.parroquia}
+                    </p>
+                    <div className="mt-2 flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      <span>{timeAgo(doc.createdAt)}</span>
+                      <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                      <span className="text-[var(--color-primary)]">ID: {doc.id.split('-')[1]}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2 mt-auto">
                     <a 
                       href={doc.pdfUrl || '#'} 
                       download 
-                      className="flex flex-col items-center justify-center py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100 text-slate-600 group/btn"
+                      className="flex flex-col items-center justify-center py-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100 text-slate-600 group/btn"
                       title="Descargar Original"
                     >
-                      <Download className="w-4 h-4 mb-1 group-hover/btn:scale-110 transition-transform" />
-                      <span className="text-[9px] font-black uppercase tracking-tighter">Bajar</span>
+                      <Download className="w-3.5 h-3.5 mb-1 group-hover/btn:-translate-y-0.5 transition-transform" />
+                      <span className="text-[8px] font-black uppercase tracking-tighter">Bajar</span>
                     </a>
                     <button 
                       onClick={() => setSelectedDoc(doc)}
-                      className="flex flex-col items-center justify-center py-2.5 rounded-xl bg-slate-50 hover:bg-[var(--color-primary-10)] hover:text-[var(--color-primary)] transition-colors border border-slate-100 text-slate-600 group/btn"
+                      className="flex flex-col items-center justify-center py-2 rounded-lg bg-slate-50 hover:bg-[var(--color-primary-10)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary-10)] transition-colors border border-slate-100 text-slate-600 group/btn"
                       title="Ver Código QR"
                     >
-                      <QrCode className="w-4 h-4 mb-1 group-hover/btn:scale-110 transition-transform" />
-                      <span className="text-[9px] font-black uppercase tracking-tighter">QR</span>
+                      <QrCode className="w-3.5 h-3.5 mb-1 group-hover/btn:-translate-y-0.5 transition-transform" />
+                      <span className="text-[8px] font-black uppercase tracking-tighter">QR</span>
                     </button>
                     <button 
                       onClick={() => handleCopy(doc.id, `${window.location.origin}/verify/${doc.id}`)}
-                      className="flex flex-col items-center justify-center py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100 text-slate-600 group/btn"
+                      className="flex flex-col items-center justify-center py-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100 text-slate-600 group/btn"
                       title="Copiar Link"
                     >
-                      {copiedId === doc.id ? <Check className="w-4 h-4 mb-1 text-green-500 scale-125" /> : <LinkIcon className="w-4 h-4 mb-1 group-hover/btn:scale-110 transition-transform" />}
-                      <span className="text-[9px] font-black uppercase tracking-tighter">{copiedId === doc.id ? 'Listo' : 'Link'}</span>
+                      {copiedId === doc.id ? <Check className="w-3.5 h-3.5 mb-1 text-green-500" /> : <LinkIcon className="w-3.5 h-3.5 mb-1 group-hover/btn:-translate-y-0.5 transition-transform" />}
+                      <span className="text-[8px] font-black uppercase tracking-tighter">{copiedId === doc.id ? 'Listo' : 'Link'}</span>
                     </button>
                   </div>
                 </div>
