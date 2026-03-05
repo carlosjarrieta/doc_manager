@@ -82,7 +82,7 @@ const DocumentVerification = () => {
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Partida_Bautismo_{data.nombres.split(' ')[0]}.pdf</h1>
           <p className="text-slate-500 text-sm mt-1 font-medium">
-            Validado el {new Date(data.createdAt).toLocaleDateString()} • Documento Válido • ID: {documentId}
+            Validado el {record ? new Date(record.createdAt).toLocaleDateString() : 'Recientemente'} • Documento Válido • ID: {documentId}
           </p>
         </div>
       </div>

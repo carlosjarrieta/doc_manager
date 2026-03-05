@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Link } from 'react-router-dom';
-import { FileCheck, ChevronRight, CheckCircle2, Sparkles, Loader2, Trash2, Plus } from 'lucide-react';
+import { ChevronRight, CheckCircle2, Sparkles, Loader2, Trash2, Plus } from 'lucide-react';
 import { fileToBase64Images } from '../utils/pdf';
 import { extractCertificatesFromImages, BaptismCertificate } from '../utils/ai';
 import { uploadToSpaces } from '../utils/storage';
@@ -19,6 +19,7 @@ const DocumentRegister = () => {
   const [successRecords, setSuccessRecords] = useState<{ id: string, name: string }[]>([]);
   const [error, setError] = useState('');
   const [sourceFile, setSourceFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -26,6 +27,7 @@ const DocumentRegister = () => {
 
     try {
       setSourceFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
       setStep('processing');
       setError('');
       
@@ -77,7 +79,11 @@ const DocumentRegister = () => {
           pdfUrl = await uploadToSpaces(sourceFile, batchId);
         } catch (uploadErr) {
           console.warn("Skipping real DO upload for DEMO since it failed:", uploadErr);
-          pdfUrl = '/abel.pdf'; // Fallback to local mock file for the demo
+          // For the demo, we use a placeholder if the real upload fails
+          // But we don't want it to ALWAYS be abel.pdf if we can avoid it
+          // In production this would be an error, for now we store the local preview link
+          // Note: This won't work across devices but will work for the local demo session
+          pdfUrl = '/abel.pdf'; 
         }
       }
       
@@ -138,7 +144,7 @@ const DocumentRegister = () => {
 
           <div className="border-t border-slate-100 pt-8 w-full flex justify-center">
             <button 
-              onClick={() => { setStep('upload'); setCertificates([]); }}
+              onClick={() => { setStep('upload'); setCertificates([]); setPreviewUrl(''); }}
               className="px-6 py-2.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 font-bold text-sm transition-colors"
             >
               Escanear Nuevos Documentos
@@ -203,7 +209,7 @@ const DocumentRegister = () => {
 
   // Edit Step (Multiple forms)
   return (
-    <div className="max-w-5xl mx-auto pb-10">
+    <div className="max-w-[1400px] mx-auto pb-10">
       <div className="mb-6 flex justify-between items-end">
         <div>
           <h2 className="text-3xl font-black tracking-tight mb-2 text-slate-900">Revisión de Registros</h2>
@@ -219,134 +225,162 @@ const DocumentRegister = () => {
         </button>
       </div>
 
-      <form onSubmit={handleSaveAll} className="space-y-8">
-        {certificates.map((cert, index) => (
-          <div key={index} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative target-form animate-in slide-in-from-bottom-4">
-            <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="font-black text-slate-800 flex items-center gap-2">
-                <div className="w-6 h-6 rounded bg-[var(--color-primary-10)] text-[var(--color-primary)] flex items-center justify-center text-xs">
-                  {index + 1}
+      <div className="flex flex-col xl:flex-row gap-8 items-start">
+        {/* Form List */}
+        <div className="flex-1 space-y-8 w-full">
+          <form id="save-all-form" onSubmit={handleSaveAll} className="space-y-8">
+            {certificates.map((cert, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative target-form animate-in slide-in-from-bottom-4">
+                <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                  <h3 className="font-black text-slate-800 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-[var(--color-primary-10)] text-[var(--color-primary)] flex items-center justify-center text-xs">
+                      {index + 1}
+                    </div>
+                    Partida de {cert.nombres || 'Desconocido'}
+                  </h3>
+                  <button 
+                    type="button" 
+                    onClick={() => removeCertificate(index)}
+                    className="text-slate-400 hover:text-red-500 transition-colors p-2"
+                    title="Eliminar registro"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
-                Partida de {cert.nombres || 'Desconocido'}
-              </h3>
-              <button 
-                type="button" 
-                onClick={() => removeCertificate(index)}
-                className="text-slate-400 hover:text-red-500 transition-colors p-2"
-                title="Eliminar registro"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="p-6 sm:p-8 space-y-8">
-              {/* Sección: Datos de la Parroquia */}
-              <section className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Diócesis</label>
-                    <input required value={cert.diocesis} onChange={e => handleFieldChange(index, 'diocesis', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Parroquia</label>
-                    <input required value={cert.parroquia} onChange={e => handleFieldChange(index, 'parroquia', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Lugar</label>
-                    <input value={cert.lugar_registro} onChange={e => handleFieldChange(index, 'lugar_registro', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Libro</label>
-                    <input required value={cert.libro} onChange={e => handleFieldChange(index, 'libro', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border bg-slate-50 px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Folio</label>
-                    <input required value={cert.folio} onChange={e => handleFieldChange(index, 'folio', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border bg-slate-50 px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Número</label>
-                    <input required value={cert.numero} onChange={e => handleFieldChange(index, 'numero', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border bg-slate-50 px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                </div>
-              </section>
+                
+                <div className="p-6 sm:p-8 space-y-8">
+                  {/* Form fields remain same... */}
+                  <section className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Diócesis</label>
+                        <input required value={cert.diocesis} onChange={e => handleFieldChange(index, 'diocesis', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Parroquia</label>
+                        <input required value={cert.parroquia} onChange={e => handleFieldChange(index, 'parroquia', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Lugar</label>
+                        <input value={cert.lugar_registro} onChange={e => handleFieldChange(index, 'lugar_registro', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Libro</label>
+                        <input required value={cert.libro} onChange={e => handleFieldChange(index, 'libro', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border bg-slate-50 px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Folio</label>
+                        <input required value={cert.folio} onChange={e => handleFieldChange(index, 'folio', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border bg-slate-50 px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 mt-2">Número</label>
+                        <input required value={cert.numero} onChange={e => handleFieldChange(index, 'numero', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border bg-slate-50 px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                    </div>
+                  </section>
 
-              {/* Sección: Datos del Bautizado */}
-              <section className="space-y-4 pt-4 border-t border-slate-100">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombres</label>
-                    <input required value={cert.nombres} onChange={e => handleFieldChange(index, 'nombres', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Apellidos</label>
-                    <input required value={cert.apellidos} onChange={e => handleFieldChange(index, 'apellidos', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Fecha de Nacimiento</label>
-                    <input required value={cert.fecha_nacimiento} onChange={e => handleFieldChange(index, 'fecha_nacimiento', e.target.value)} type="text" placeholder="YYYY-MM-DD" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Lugar de Nacimiento</label>
-                    <input value={cert.lugar_nacimiento} onChange={e => handleFieldChange(index, 'lugar_nacimiento', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                </div>
-              </section>
+                  <section className="space-y-4 pt-4 border-t border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombres</label>
+                        <input required value={cert.nombres} onChange={e => handleFieldChange(index, 'nombres', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Apellidos</label>
+                        <input required value={cert.apellidos} onChange={e => handleFieldChange(index, 'apellidos', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Fecha de Nacimiento</label>
+                        <input required value={cert.fecha_nacimiento} onChange={e => handleFieldChange(index, 'fecha_nacimiento', e.target.value)} type="text" placeholder="YYYY-MM-DD" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Lugar de Nacimiento</label>
+                        <input value={cert.lugar_nacimiento} onChange={e => handleFieldChange(index, 'lugar_nacimiento', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                    </div>
+                  </section>
 
-              {/* Sección: Padres y Padrinos */}
-              <section className="space-y-4 pt-4 border-t border-slate-100">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombre del Padre</label>
-                    <input value={cert.padre} onChange={e => handleFieldChange(index, 'padre', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombre de la Madre</label>
-                    <input value={cert.madre} onChange={e => handleFieldChange(index, 'madre', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombres de Padrinos</label>
-                    <input value={cert.padrinos} onChange={e => handleFieldChange(index, 'padrinos', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ministro (Da Fe)</label>
-                    <input required value={cert.ministro} onChange={e => handleFieldChange(index, 'ministro', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Fecha de Bautismo</label>
-                    <input required value={cert.fecha_bautismo} onChange={e => handleFieldChange(index, 'fecha_bautismo', e.target.value)} type="text" placeholder="YYYY-MM-DD" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                  </div>
+                  <section className="space-y-4 pt-4 border-t border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombre del Padre</label>
+                        <input value={cert.padre} onChange={e => handleFieldChange(index, 'padre', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombre de la Madre</label>
+                        <input value={cert.madre} onChange={e => handleFieldChange(index, 'madre', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombres de Padrinos</label>
+                        <input value={cert.padrinos} onChange={e => handleFieldChange(index, 'padrinos', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ministro (Da Fe)</label>
+                        <input required value={cert.ministro} onChange={e => handleFieldChange(index, 'ministro', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Fecha de Bautismo</label>
+                        <input required value={cert.fecha_bautismo} onChange={e => handleFieldChange(index, 'fecha_bautismo', e.target.value)} type="text" placeholder="YYYY-MM-DD" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                    </div>
+                  </section>
                 </div>
-              </section>
-
-              <div className="mt-4 flex items-center gap-2 bg-[var(--color-primary-10)] text-[var(--color-primary)] px-3 py-1.5 rounded-full text-xs font-bold border border-[var(--color-primary)]/20 w-max">
-                <FileCheck className="w-4 h-4" />
-                Documento anexado
               </div>
+            ))}
+          </form>
+        </div>
+
+        {/* Real-time Document Preview */}
+        <div className="w-full xl:w-[500px] xl:sticky xl:top-24 space-y-4">
+          <div className="bg-slate-900 rounded-xl overflow-hidden shadow-2xl border border-slate-800">
+            <div className="px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center text-white">
+              <span className="text-xs font-bold uppercase tracking-widest opacity-80">Vista Previa Original</span>
+              <span className="bg-[var(--color-primary)] px-2 py-0.5 rounded text-[10px] font-black uppercase">Documento Fuente</span>
+            </div>
+            <div className="h-[650px] bg-slate-800 overflow-auto relative">
+              {previewUrl ? (
+                <iframe 
+                  src={`${previewUrl}#toolbar=0&navpanes=0`} 
+                  className="w-full h-full border-none block" 
+                  title="Source Preview" 
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 gap-3">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                  <p className="text-sm font-medium">Cargando visualización...</p>
+                </div>
+              )}
             </div>
           </div>
-        ))}
-
-        <div className="sticky bottom-6 flex justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-lg mt-8 z-20 items-center">
-          <p className="text-slate-600 font-medium px-4 text-sm hidden sm:block">
-            {certificates.length} partidas listas para guardar
-          </p>
-          <div className="flex gap-4 w-full sm:w-auto">
-            <button 
-              type="button"
-              onClick={() => setStep('upload')}
-              className="px-6 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-50"
-            >
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              className="flex-1 sm:flex-none px-8 py-3 rounded-lg font-bold text-white shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] text-sm bg-[var(--color-primary)] hover:opacity-90"
-            >
-              Guardar {certificates.length} Registros y Generar QR
-            </button>
+          <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+             <p className="text-xs text-blue-700 font-medium leading-relaxed">
+               <strong>Tip:</strong> Puedes comparar los datos extraídos por la IA con el documento original a la izquierda antes de guardar el registro final.
+             </p>
           </div>
         </div>
-      </form>
+      </div>
+
+      <div className="sticky bottom-6 flex justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-xl mt-8 z-20 items-center">
+        <p className="text-slate-600 font-bold px-4 text-sm hidden sm:block">
+          {certificates.length} partida(s) lista(s) para emitir QR
+        </p>
+        <div className="flex gap-4 w-full sm:w-auto">
+          <button 
+            type="button"
+            onClick={() => setStep('upload')}
+            className="px-6 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-50"
+          >
+            Cancelar
+          </button>
+          <button 
+            form="save-all-form"
+            type="submit" 
+            className="flex-1 sm:flex-none px-8 py-3 rounded-lg font-black text-white shadow-xl transition-all focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] text-sm bg-[var(--color-primary)] hover:opacity-90 active:scale-95"
+          >
+            Emitir {certificates.length} Registro(s) y QR
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

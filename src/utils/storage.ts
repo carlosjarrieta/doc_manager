@@ -20,10 +20,11 @@ export async function uploadToSpaces(file: File, documentId: string): Promise<st
   const fileExtension = file.name.split('.').pop();
   const fileName = `ecc-docs/${documentId}.${fileExtension}`;
 
+  const buffer = await file.arrayBuffer();
   const command = new PutObjectCommand({
     Bucket: bucketName,
     Key: fileName,
-    Body: file,
+    Body: new Uint8Array(buffer),
     ACL: "public-read", // Make it publicly accessible for the verification page
     ContentType: file.type,
   });

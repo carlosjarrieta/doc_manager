@@ -100,11 +100,10 @@ const Dashboard = () => {
             return (
               <div key={doc.id} className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col hover:-translate-y-1">
                 <div className="relative aspect-[4/5] bg-slate-100 overflow-hidden cursor-pointer" onClick={() => setSelectedDoc(doc)}>
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-700 opacity-60"
-                    style={{ backgroundImage: `url('https://images.unsplash.com/photo-1544376798-89aa6b82c6cd?q=80&w=400&auto=format&fit=crop')` }}
-                  ></div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent"></div>
+                  <div className={`absolute inset-0 transition-transform duration-700 opacity-20 flex items-center justify-center`}>
+                    <FileText className="w-24 h-24 text-slate-400" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent"></div>
                   
                   <div className="absolute top-4 left-4">
                     <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-[9px] font-black text-slate-800 uppercase tracking-tighter shadow-sm border border-white/20">
@@ -113,7 +112,7 @@ const Dashboard = () => {
                   </div>
 
                   <div className="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    <p className="text-[10px] font-black text-white/70 mb-1 uppercase tracking-widest pl-1">Partida de Bautismo</p>
+                    <p className="text-[10px] font-black text-white/90 mb-1 uppercase tracking-widest pl-1">Partida de Bautismo</p>
                     <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-xl shadow-xl border border-white/20">
                       <p className="text-sm font-black text-slate-800 leading-tight truncate">
                         {doc.data.nombres} {doc.data.apellidos}
