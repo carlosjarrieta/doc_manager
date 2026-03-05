@@ -89,7 +89,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
               </button>
-              <div className="w-9 h-9 rounded-full bg-slate-200 border border-slate-200 bg-cover bg-center shadow-sm cursor-pointer hover:border-[var(--color-primary)] transition-colors" style={{ backgroundImage: "url('https://i.pravatar.cc/150?img=11')" }}></div>
+              <div className="w-9 h-9 border border-slate-200 bg-cover bg-center shadow-sm cursor-pointer hover:border-[var(--color-primary)] transition-colors rounded-xl bg-slate-100" style={{ backgroundImage: "url('/avatar.jpg')" }}></div>
             </div>
           </header>
 
@@ -128,7 +128,7 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => {
               <Link className="text-slate-500 hover:text-slate-900 text-sm font-bold transition-colors" to="/">Dashboard</Link>
               <Link className="text-[var(--color-primary)] border-b-2 border-[var(--color-primary)] py-1 text-sm font-bold" to="#">Verificación</Link>
             </nav>
-            <div className="w-9 h-9 rounded-full border border-slate-200 bg-cover bg-center shadow-sm cursor-pointer ml-2 md:ml-4" style={{ backgroundImage: "url('https://i.pravatar.cc/150?img=11')" }}></div>
+            <div className="w-9 h-9 border border-slate-200 bg-cover bg-center shadow-sm cursor-pointer ml-2 md:ml-4 rounded-xl bg-slate-100" style={{ backgroundImage: "url('/avatar.jpg')" }}></div>
           </div>
         </header>
         <main className="flex-1 flex flex-col overflow-hidden bg-slate-50/50">
