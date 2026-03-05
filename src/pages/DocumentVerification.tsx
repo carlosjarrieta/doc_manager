@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FileText, ShieldCheck, Download, QrCode, Maximize, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, ShieldCheck, Download, QrCode, Maximize, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Copy } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { getDocument, DocumentRecord } from '../utils/db';
 
 const DocumentVerification = () => {
@@ -156,27 +157,25 @@ const DocumentVerification = () => {
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
               <QrCode className="w-5 h-5 text-[var(--color-primary)]" />
-              Share Document
+              Compartir Documento
             </h3>
             <div className="space-y-4">
               <div className="p-4 bg-slate-50 rounded-lg flex flex-col items-center justify-center gap-4 border border-slate-100">
                 <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200">
                    <div className="w-28 h-28 flex items-center justify-center">
-                     {/* Replace with actual QR if needed, using icon for representation style from Stitch */}
-                     <QrCode className="w-24 h-24 text-slate-800" />
+                     <QRCodeSVG value={`${window.location.origin}/verify/${documentId}`} size={112} />
                    </div>
                 </div>
-                <button className="w-full bg-[var(--color-primary)] text-white font-bold py-2.5 rounded-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 text-sm shadow-sm">
-                  <QrCode className="w-4 h-4" />
-                  Regenerate QR
-                </button>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">Direct Link</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">Enlace Directo</label>
                 <div className="flex items-center gap-2">
-                  <input className="w-full bg-slate-50 border-slate-200 rounded-lg text-sm text-slate-600 focus:ring-[var(--color-primary)] h-10 px-3 font-medium outline-none" readOnly type="text" value={`https://docmanager.local/v/${documentId}`} />
-                  <button className="h-10 w-10 shrink-0 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center justify-center transition-colors">
-                    <FileText className="w-4 h-4 text-slate-600" />
+                  <input className="w-full bg-slate-50 border-slate-200 rounded-lg text-sm text-slate-600 focus:ring-[var(--color-primary)] h-10 px-3 font-medium outline-none" readOnly type="text" value={`${window.location.origin}/verify/${documentId}`} />
+                  <button 
+                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/verify/${documentId}`)}
+                    className="h-10 w-10 shrink-0 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                  >
+                    <Copy className="w-4 h-4 text-slate-600" />
                   </button>
                 </div>
               </div>

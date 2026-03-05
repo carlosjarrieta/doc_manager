@@ -65,3 +65,31 @@ export async function getDocument(documentId: string): Promise<DocumentRecord | 
     return null;
   }
 }
+
+export async function listDocuments(): Promise<DocumentRecord[]> {
+  try {
+    if (!import.meta.env.VITE_KV_REST_API_URL) {
+      // Fallback
+      const records: DocumentRecord[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('doc_')) {
+          const item = localStorage.getItem(key);
+          if (item) records.push(JSON.parse(item));
+        }
+      }
+      return records.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    const keys = await kv.keys('doc_*');
+    if (!keys || keys.length === 0) return [];
+    
+    const records = await kv.mget<DocumentRecord[]>(...keys);
+    return records
+      .filter(Boolean)
+      .sort((a, b) => new Date(b!.createdAt).getTime() - new Date(a!.createdAt).getTime()) as DocumentRecord[];
+  } catch (error) {
+    console.error("Error listing documents:", error);
+    return [];
+  }
+}

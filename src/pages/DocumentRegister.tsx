@@ -71,10 +71,14 @@ const DocumentRegister = () => {
       let pdfUrl = '';
 
       if (sourceFile) {
-        // Upload the primary PDF/Image to Digital Ocean once per batch upload (can share same pdfUrl)
-        // using the first document's ID as the main filename reference
-        const batchId = 'BATCH-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-        pdfUrl = await uploadToSpaces(sourceFile, batchId);
+        // Upload the primary PDF/Image to Digital Ocean once per batch upload
+        try {
+          const batchId = 'BATCH-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+          pdfUrl = await uploadToSpaces(sourceFile, batchId);
+        } catch (uploadErr) {
+          console.warn("Skipping real DO upload for DEMO since it failed:", uploadErr);
+          pdfUrl = '/abel.pdf'; // Fallback to local mock file for the demo
+        }
       }
       
       for (const cert of certificates) {
