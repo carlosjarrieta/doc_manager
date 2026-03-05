@@ -77,9 +77,10 @@ const DocumentRegister = () => {
         try {
           const batchId = 'BATCH-' + Math.random().toString(36).substring(2, 6).toUpperCase();
           pdfUrl = await uploadToSpaces(sourceFile, batchId);
-        } catch (uploadErr) {
-          console.warn("Real cloud upload failed. Using local blob URL for current session:", uploadErr);
-          pdfUrl = previewUrl; // Use the actual file selected by the user
+        } catch (uploadErr: any) {
+          console.error("Real cloud upload failed:", uploadErr);
+          const errorMsg = uploadErr.message || "Error desconocido";
+          throw new Error(`La subida a la nube falló: ${errorMsg}. Por favor, verifica tu conexión o configuración de Digital Ocean.`);
         }
       }
       
