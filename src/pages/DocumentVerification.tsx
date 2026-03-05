@@ -19,6 +19,7 @@ const DocumentVerification = () => {
         if (docRecord) {
           setRecord(docRecord);
           setData(docRecord.data);
+          console.log("Document loaded:", docRecord.id, "URL:", docRecord.pdfUrl);
         }
       }
       setLoading(false);
@@ -48,9 +49,9 @@ const DocumentVerification = () => {
     );
   }
 
-
   const pdfDisplayUrl = record?.pdfUrl;
-  const isImage = pdfDisplayUrl?.match(/\.(jpg|jpeg|png|webp|avif|gif)$|data:image/i);
+  const isImage = pdfDisplayUrl?.match(/\.(jpg|jpeg|png|webp|avif|gif|bmp)$|^data:image\//i);
+  const isLocalBlob = pdfDisplayUrl?.startsWith('blob:');
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 3));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.5));
@@ -97,7 +98,18 @@ const DocumentVerification = () => {
               style={{ transform: `scale(${zoom})`, minWidth: zoom > 1 ? `${768 * zoom}px` : 'auto' }}
             >
               {pdfDisplayUrl ? (
-                isImage ? (
+                isLocalBlob ? (
+                  <div className="flex flex-col items-center justify-center py-20 px-8 text-center bg-amber-50">
+                    <div className="bg-amber-100 p-4 rounded-full mb-4">
+                      <ShieldCheck className="w-12 h-12 text-amber-600" />
+                    </div>
+                    <p className="text-amber-900 font-bold text-lg mb-2">Archivo No Disponible Externamente</p>
+                    <p className="text-amber-700 text-sm max-w-md">
+                      Este documento se guardó solo de forma local porque la subida a la nube falló. 
+                      Para que sea visible en otros dispositivos, intenta registrarlo de nuevo asegurando conexión a internet.
+                    </p>
+                  </div>
+                ) : isImage ? (
                   <img src={pdfDisplayUrl} alt="Soporte Bautismo" className="w-full h-auto block" />
                 ) : (
                   <iframe 
@@ -190,12 +202,12 @@ const DocumentVerification = () => {
             <div className="space-y-2">
               <a href={pdfDisplayUrl} download target="_blank" rel="noreferrer" className="w-full flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors group cursor-pointer">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-100 rounded text-red-600">
+                  <div className="p-2 bg-[var(--color-primary-10)] rounded text-[var(--color-primary)]">
                     <FileText className="w-5 h-5" />
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-black text-slate-900">PDF Format</p>
-                    <p className="text-xs text-slate-500 font-medium">Highest quality</p>
+                    <p className="text-sm font-black text-slate-900">{isImage ? 'Imagen Original' : 'Documento PDF'}</p>
+                    <p className="text-xs text-slate-500 font-medium">Máxima calidad disponible</p>
                   </div>
                 </div>
                 <Download className="w-5 h-5 text-slate-400 group-hover:text-[var(--color-primary)] transition-colors" />
