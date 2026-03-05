@@ -18,7 +18,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SearchContext.Provider value={{ searchTerm, setSearchTerm }}>
       <div className="flex h-screen overflow-hidden font-display">
-        <aside className="w-64 border-r border-slate-200 bg-white flex flex-col z-10 shrink-0">
+        <aside className="hidden md:flex w-64 border-r border-slate-200 bg-white flex-col z-10 shrink-0">
           <div className="p-6 flex items-center gap-3">
             <div className="bg-[var(--color-primary)] rounded-lg p-2 text-white flex items-center justify-center">
               <UploadCloud className="w-6 h-6" />
@@ -64,8 +64,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </aside>
 
         <main className="flex-1 flex flex-col overflow-hidden bg-slate-50 relative">
-          <header className="h-16 border-b border-slate-200 bg-white px-8 flex items-center justify-between shrink-0 relative z-10 shadow-sm">
-            <div className="flex-1 max-w-xl">
+          <header className="h-16 border-b border-slate-200 bg-white px-4 md:px-8 flex items-center justify-between shrink-0 relative z-10 shadow-sm">
+            <div className="flex-1 max-w-xl flex items-center gap-3">
               <div className="relative group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[var(--color-primary)] transition-colors" />
                 <input 
@@ -77,11 +77,14 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 />
               </div>
             </div>
-            <div className="flex items-center gap-4 ml-8">
-              <Link to="/scan" className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2.5 rounded-lg font-bold text-sm hover:opacity-90 transition-all shadow-sm">
-                <ScanLine className="w-4 h-4" /> Escanear Nuevo
+            <div className="flex items-center gap-2 md:gap-4 ml-4 md:ml-8">
+              <Link to="/scan" className="hidden sm:flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2.5 rounded-lg font-bold text-sm hover:opacity-90 transition-all shadow-sm">
+                <ScanLine className="w-4 h-4" /> Escanear
               </Link>
-              <div className="h-8 w-px bg-slate-200 mx-2"></div>
+              <Link to="/scan" className="sm:hidden flex items-center justify-center bg-[var(--color-primary)] text-white w-9 h-9 rounded-lg font-bold hover:opacity-90 transition-all shadow-sm">
+                <ScanLine className="w-4 h-4" />
+              </Link>
+              <div className="h-8 w-px bg-slate-200 mx-1 md:mx-2"></div>
               <button className="p-2 text-slate-500 hover:bg-slate-100 transition-colors rounded-lg relative">
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
@@ -90,7 +93,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto w-full relative z-0 p-8">
+          <div className="flex-1 overflow-y-auto w-full relative z-0 p-4 md:p-8">
              {children}
           </div>
         </main>
@@ -103,8 +106,8 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden font-display bg-slate-50">
       <div className="layout-container flex h-full grow flex-col">
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 bg-white px-10 py-4 shadow-sm relative z-10">
-          <div className="flex items-center gap-8">
+        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 bg-white px-4 md:px-10 py-4 shadow-sm relative z-10">
+          <div className="flex items-center gap-4 md:gap-8">
             <Link to="/" className="flex items-center gap-2 text-[var(--color-primary)] hover:opacity-80">
               <UploadCloud className="w-7 h-7 font-bold" />
               <h2 className="text-slate-900 text-xl font-black leading-tight tracking-tight">CloudDoc</h2>
@@ -120,12 +123,12 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </div>
           
-          <div className="flex flex-1 justify-end gap-8 items-center">
-            <nav className="flex items-center gap-8">
+          <div className="flex flex-1 justify-end gap-4 md:gap-8 items-center">
+            <nav className="hidden sm:flex items-center gap-8">
               <Link className="text-slate-500 hover:text-slate-900 text-sm font-bold transition-colors" to="/">Dashboard</Link>
               <Link className="text-[var(--color-primary)] border-b-2 border-[var(--color-primary)] py-1 text-sm font-bold" to="#">Verificación</Link>
             </nav>
-            <div className="w-9 h-9 rounded-full border border-slate-200 bg-cover bg-center shadow-sm cursor-pointer ml-4" style={{ backgroundImage: "url('https://i.pravatar.cc/150?img=11')" }}></div>
+            <div className="w-9 h-9 rounded-full border border-slate-200 bg-cover bg-center shadow-sm cursor-pointer ml-2 md:ml-4" style={{ backgroundImage: "url('https://i.pravatar.cc/150?img=11')" }}></div>
           </div>
         </header>
         <main className="flex-1 flex flex-col overflow-hidden bg-slate-50/50">

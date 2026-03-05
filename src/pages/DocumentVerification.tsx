@@ -58,44 +58,50 @@ const DocumentVerification = () => {
   const handleResetZoom = () => setZoom(1);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden md:overflow-hidden">
       {/* Breadcrumbs & Header */}
-      <div className="px-10 py-6 shrink-0">
-        <div className="flex items-center gap-2 text-sm text-slate-500 mb-2 font-bold">
+      <div className="px-4 md:px-10 py-4 md:py-6 shrink-0">
+        <div className="flex items-center gap-2 text-xs md:text-sm text-slate-500 mb-2 font-bold">
           <Link className="hover:text-[var(--color-primary)]" to="/">Registros</Link>
           <ChevronRight className="w-3 h-3" />
           <span className="text-slate-900">Verificación</span>
         </div>
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Partida_Bautismo_{data.nombres.split(' ')[0]}.{isImage ? 'img' : 'pdf'}</h1>
-          <p className="text-slate-500 text-sm mt-1 font-medium">
-            Validado el {record ? new Date(record.createdAt).toLocaleDateString() : 'Recientemente'} • Documento Válido • ID: {documentId}
+          <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight break-all md:break-normal line-clamp-2 md:line-clamp-none">
+            Partida_Bautismo_{data.nombres.split(' ')[0]}.{isImage ? 'img' : 'pdf'}
+          </h1>
+          <p className="text-slate-500 text-xs md:text-sm mt-1 mb-2 font-medium flex flex-wrap gap-1">
+            <span>Validado el {record ? new Date(record.createdAt).toLocaleDateString() : 'Recientemente'}</span>
+            <span className="hidden md:inline">•</span>
+            <span>Documento Válido</span>
+            <span className="hidden md:inline">•</span>
+            <span className="break-all">ID: {documentId}</span>
           </p>
         </div>
       </div>
 
       {/* Content Grid */}
-      <div className="flex flex-col lg:flex-row flex-1 gap-6 px-10 pb-10 overflow-hidden">
+      <div className="flex flex-col-reverse lg:flex-row flex-1 gap-4 md:gap-6 px-4 md:px-10 pb-6 md:pb-10 md:overflow-hidden min-h-min">
         
-        {/* Left: Document Preview */}
-        <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden min-h-[600px]">
-          <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100 shrink-0 bg-white z-10">
-            <div className="flex items-center gap-4 hidden sm:flex">
-              <button onClick={handleZoomOut} className="p-1 hover:bg-slate-100 rounded transition-colors" title="Alejar"><ZoomOut className="w-5 h-5 text-slate-600" /></button>
+        {/* Left (Bottom on Mobile): Document Preview */}
+        <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden min-h-[400px] lg:min-h-[600px]">
+          <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-slate-100 shrink-0 bg-white z-10">
+            <div className="flex items-center gap-2 md:gap-4">
+              <button onClick={handleZoomOut} className="p-2 md:p-1 bg-slate-50 md:bg-transparent hover:bg-slate-100 rounded-lg md:rounded transition-colors" title="Alejar"><ZoomOut className="w-5 h-5 text-slate-600" /></button>
               <span className="text-sm font-bold text-slate-600 w-12 text-center">{Math.round(zoom * 100)}%</span>
-              <button onClick={handleZoomIn} className="p-1 hover:bg-slate-100 rounded transition-colors" title="Acercar"><ZoomIn className="w-5 h-5 text-slate-600" /></button>
+              <button onClick={handleZoomIn} className="p-2 md:p-1 bg-slate-50 md:bg-transparent hover:bg-slate-100 rounded-lg md:rounded transition-colors" title="Acercar"><ZoomIn className="w-5 h-5 text-slate-600" /></button>
             </div>
             <div className="flex items-center gap-4 hidden sm:flex">
               <button className="p-1 hover:bg-slate-100 rounded transition-colors opacity-50 cursor-not-allowed"><ChevronLeft className="w-5 h-5 text-slate-600" /></button>
               <span className="text-sm font-bold text-slate-600 text-center">Pág 1 de 1</span>
               <button className="p-1 hover:bg-slate-100 rounded transition-colors opacity-50 cursor-not-allowed"><ChevronRight className="w-5 h-5 text-slate-600" /></button>
             </div>
-            <button onClick={handleResetZoom} className="p-1 hover:bg-slate-100 rounded transition-colors" title="Restablecer"><Maximize className="w-5 h-5 text-slate-600" /></button>
+            <button onClick={handleResetZoom} className="p-2 md:p-1 bg-slate-50 md:bg-transparent hover:bg-slate-100 rounded-lg md:rounded transition-colors" title="Restablecer"><Maximize className="w-5 h-5 text-slate-600" /></button>
           </div>
-          <div className="flex-1 bg-slate-100 p-4 sm:p-8 overflow-auto flex justify-center items-start scrollbar-hide">
+          <div className="flex-1 bg-slate-100 p-2 sm:p-8 overflow-auto flex justify-center items-start">
             <div 
               className="w-full max-w-3xl bg-white shadow-lg overflow-hidden relative transition-transform duration-200 ease-out origin-top"
-              style={{ transform: `scale(${zoom})`, minWidth: zoom > 1 ? `${768 * zoom}px` : 'auto' }}
+              style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
             >
               {pdfDisplayUrl ? (
                 isLocalBlob ? (
@@ -110,11 +116,11 @@ const DocumentVerification = () => {
                     </p>
                   </div>
                 ) : isImage ? (
-                  <img src={pdfDisplayUrl} alt="Soporte Bautismo" className="w-full h-auto block" />
+                  <img src={pdfDisplayUrl} alt="Soporte Bautismo" className="w-full h-auto block object-contain" />
                 ) : (
                   <iframe 
                     src={`${pdfDisplayUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                    className="w-full h-[800px] border-none block"
+                    className="w-full h-screen sm:h-[800px] border-none block"
                     title="Soporte Bautismo"
                   />
                 )
@@ -128,10 +134,10 @@ const DocumentVerification = () => {
           </div>
         </div>
 
-        {/* Right: Share & Details Panel */}
-        <div className="w-full lg:w-[340px] flex flex-col gap-6 shrink-0 overflow-y-auto pr-1">
+        {/* Right (Top on Mobile): Share & Details Panel */}
+        <div className="w-full lg:w-[340px] flex flex-col gap-4 md:gap-6 shrink-0 md:overflow-y-auto pr-1">
           
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+          <div className="bg-white p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
              <div className="absolute -right-4 -top-4 opacity-5 pointer-events-none">
                 <ShieldCheck className="w-32 h-32 text-green-600" />
              </div>
