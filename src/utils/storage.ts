@@ -8,6 +8,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 const s3Client = new S3Client({
   endpoint: import.meta.env.VITE_DO_ENDPOINT || "https://nyc3.digitaloceanspaces.com",
   region: import.meta.env.VITE_DO_REGION || "nyc3",
+  forcePathStyle: false,
   credentials: {
     accessKeyId: import.meta.env.VITE_DO_ACCESS_KEY || "",
     secretAccessKey: import.meta.env.VITE_DO_SECRET || "",
@@ -31,11 +32,12 @@ export async function uploadToSpaces(file: File, documentId: string): Promise<st
 
   try {
     await s3Client.send(command);
-    // Generate the public URL
+    // Generate the public URL: https://bucket.region.digitaloceanspaces.com/key
     const endpoint = import.meta.env.VITE_DO_ENDPOINT || "https://nyc3.digitaloceanspaces.com";
-    return `${endpoint}/${bucketName}/${fileName}`;
+    const cleanEndpoint = endpoint.replace('https://', '');
+    return `https://${bucketName}.${cleanEndpoint}/${fileName}`;
   } catch (error) {
     console.error("Error uploading to Digital Ocean Spaces:", error);
-    throw new Error("Failed to upload document to storage.");
+    throw error;
   }
 }

@@ -9,6 +9,7 @@ const DocumentVerification = () => {
   const [data, setData] = useState<any>(null);
   const [record, setRecord] = useState<DocumentRecord | null>(null);
   const [loading, setLoading] = useState(true);
+  const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,7 +69,13 @@ const DocumentVerification = () => {
     );
   }
 
-  const pdfDisplayUrl = record?.pdfUrl || '/abel.pdf';
+
+  const pdfDisplayUrl = record?.pdfUrl;
+  const isImage = pdfDisplayUrl?.match(/\.(jpg|jpeg|png|webp|avif|gif)$|data:image/i);
+
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 3));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.5));
+  const handleResetZoom = () => setZoom(1);
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -80,7 +87,7 @@ const DocumentVerification = () => {
           <span className="text-slate-900">Verificación</span>
         </div>
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Partida_Bautismo_{data.nombres.split(' ')[0]}.pdf</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Partida_Bautismo_{data.nombres.split(' ')[0]}.{isImage ? 'img' : 'pdf'}</h1>
           <p className="text-slate-500 text-sm mt-1 font-medium">
             Validado el {record ? new Date(record.createdAt).toLocaleDateString() : 'Recientemente'} • Documento Válido • ID: {documentId}
           </p>
@@ -92,26 +99,40 @@ const DocumentVerification = () => {
         
         {/* Left: Document Preview */}
         <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden min-h-[600px]">
-          <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100 shrink-0">
+          <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100 shrink-0 bg-white z-10">
             <div className="flex items-center gap-4 hidden sm:flex">
-              <button className="p-1 hover:bg-slate-100 rounded transition-colors"><ZoomOut className="w-5 h-5 text-slate-600" /></button>
-              <span className="text-sm font-bold text-slate-600">100%</span>
-              <button className="p-1 hover:bg-slate-100 rounded transition-colors"><ZoomIn className="w-5 h-5 text-slate-600" /></button>
+              <button onClick={handleZoomOut} className="p-1 hover:bg-slate-100 rounded transition-colors" title="Alejar"><ZoomOut className="w-5 h-5 text-slate-600" /></button>
+              <span className="text-sm font-bold text-slate-600 w-12 text-center">{Math.round(zoom * 100)}%</span>
+              <button onClick={handleZoomIn} className="p-1 hover:bg-slate-100 rounded transition-colors" title="Acercar"><ZoomIn className="w-5 h-5 text-slate-600" /></button>
             </div>
             <div className="flex items-center gap-4 hidden sm:flex">
-              <button className="p-1 hover:bg-slate-100 rounded transition-colors"><ChevronLeft className="w-5 h-5 text-slate-600" /></button>
-              <span className="text-sm font-bold text-slate-600">Pág 1 de 1</span>
-              <button className="p-1 hover:bg-slate-100 rounded transition-colors"><ChevronRight className="w-5 h-5 text-slate-600" /></button>
+              <button className="p-1 hover:bg-slate-100 rounded transition-colors opacity-50 cursor-not-allowed"><ChevronLeft className="w-5 h-5 text-slate-600" /></button>
+              <span className="text-sm font-bold text-slate-600 text-center">Pág 1 de 1</span>
+              <button className="p-1 hover:bg-slate-100 rounded transition-colors opacity-50 cursor-not-allowed"><ChevronRight className="w-5 h-5 text-slate-600" /></button>
             </div>
-            <button className="p-1 hover:bg-slate-100 rounded transition-colors"><Maximize className="w-5 h-5 text-slate-600" /></button>
+            <button onClick={handleResetZoom} className="p-1 hover:bg-slate-100 rounded transition-colors" title="Restablecer"><Maximize className="w-5 h-5 text-slate-600" /></button>
           </div>
-          <div className="flex-1 bg-slate-100 p-4 sm:p-8 overflow-auto flex justify-center relative">
-            <div className="w-full max-w-3xl m-auto bg-white shadow-lg overflow-hidden relative">
-              <iframe 
-                src={`${pdfDisplayUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                className="w-full h-[800px] border-none block"
-                title="Soporte Bautismo"
-              />
+          <div className="flex-1 bg-slate-100 p-4 sm:p-8 overflow-auto flex justify-center items-start scrollbar-hide">
+            <div 
+              className="w-full max-w-3xl bg-white shadow-lg overflow-hidden relative transition-transform duration-200 ease-out origin-top"
+              style={{ transform: `scale(${zoom})`, minWidth: zoom > 1 ? `${768 * zoom}px` : 'auto' }}
+            >
+              {pdfDisplayUrl ? (
+                isImage ? (
+                  <img src={pdfDisplayUrl} alt="Soporte Bautismo" className="w-full h-auto block" />
+                ) : (
+                  <iframe 
+                    src={`${pdfDisplayUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                    className="w-full h-[800px] border-none block"
+                    title="Soporte Bautismo"
+                  />
+                )
+              ) : (
+                <div className="flex flex-col items-center justify-center py-40 text-slate-400">
+                  <FileText className="w-16 h-16 mb-4 opacity-20" />
+                  <p className="font-bold">Vista previa no disponible</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

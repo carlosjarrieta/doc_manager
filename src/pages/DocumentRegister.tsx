@@ -78,12 +78,8 @@ const DocumentRegister = () => {
           const batchId = 'BATCH-' + Math.random().toString(36).substring(2, 6).toUpperCase();
           pdfUrl = await uploadToSpaces(sourceFile, batchId);
         } catch (uploadErr) {
-          console.warn("Skipping real DO upload for DEMO since it failed:", uploadErr);
-          // For the demo, we use a placeholder if the real upload fails
-          // But we don't want it to ALWAYS be abel.pdf if we can avoid it
-          // In production this would be an error, for now we store the local preview link
-          // Note: This won't work across devices but will work for the local demo session
-          pdfUrl = '/abel.pdf'; 
+          console.warn("Real cloud upload failed. Using local blob URL for current session:", uploadErr);
+          pdfUrl = previewUrl; // Use the actual file selected by the user
         }
       }
       
@@ -339,11 +335,15 @@ const DocumentRegister = () => {
             </div>
             <div className="h-[650px] bg-slate-800 overflow-auto relative">
               {previewUrl ? (
-                <iframe 
-                  src={`${previewUrl}#toolbar=0&navpanes=0`} 
-                  className="w-full h-full border-none block" 
-                  title="Source Preview" 
-                />
+                sourceFile?.type.startsWith('image/') ? (
+                  <img src={previewUrl} alt="Source Preview" className="w-full h-auto block" />
+                ) : (
+                  <iframe 
+                    src={`${previewUrl}#toolbar=0&navpanes=0`} 
+                    className="w-full h-full border-none block" 
+                    title="Source Preview" 
+                  />
+                )
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 gap-3">
                   <Loader2 className="w-8 h-8 animate-spin" />
