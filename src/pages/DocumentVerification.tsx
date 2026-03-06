@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FileCheck, ShieldCheck, Download, QrCode, Maximize, ZoomIn, ZoomOut, ChevronRight, Copy } from 'lucide-react';
+import { FileCheck, ShieldCheck, Download, QrCode, Maximize, ZoomIn, ZoomOut, ChevronRight, Copy, ArrowLeft } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { getDocument, DocumentRecord } from '../utils/db';
 import { OfficialCertificate } from '../components/OfficialCertificate';
@@ -106,15 +106,24 @@ const DocumentVerification = () => {
           <span className="text-slate-900">Certificado Digital</span>
         </div>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight break-all md:break-normal line-clamp-2 md:line-clamp-none">
-              {data.nombres} {data.apellidos}
-            </h1>
-            <p className="text-slate-500 text-xs md:text-sm mt-1 font-medium flex flex-wrap gap-1">
-              <span>Validado el {record ? new Date(record.createdAt).toLocaleDateString() : 'Recientemente'}</span>
-              <span className="hidden md:inline">•</span>
-              <span className="break-all">ID: {documentId}</span>
-            </p>
+          <div className="flex items-start gap-4">
+            <Link 
+              to="/" 
+              className="mt-1 p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all text-slate-600 group active:scale-95"
+              title="Volver al Panel"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            </Link>
+            <div>
+              <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight break-all md:break-normal line-clamp-2 md:line-clamp-none leading-tight">
+                {data.nombres} {data.apellidos}
+              </h1>
+              <p className="text-slate-500 text-xs md:text-sm mt-1 font-medium flex flex-wrap gap-1">
+                <span>Validado el {record ? new Date(record.createdAt).toLocaleDateString() : 'Recientemente'}</span>
+                <span className="hidden md:inline">•</span>
+                <span className="break-all">ID: {documentId}</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
