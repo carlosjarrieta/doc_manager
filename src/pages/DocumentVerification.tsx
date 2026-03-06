@@ -54,7 +54,7 @@ const DocumentVerification = () => {
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: 'letter'
       });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -137,7 +137,7 @@ const DocumentVerification = () => {
             </div>
             <button onClick={handleResetZoom} className="p-2 md:p-1 bg-slate-50 md:bg-transparent hover:bg-slate-100 rounded-lg md:rounded transition-colors" title="Restablecer"><Maximize className="w-5 h-5 text-slate-600" /></button>
           </div>
-          <div className="flex-1 bg-slate-50 p-2 sm:p-4 overflow-auto flex justify-center items-start">
+          <div className="flex-1 p-2 sm:p-4 overflow-auto flex justify-center items-start" style={{ backgroundColor: '#f8fafc' }}>
             <div 
               className="relative transition-transform duration-200 ease-out origin-top w-full max-w-[210mm]"
               style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
