@@ -1,9 +1,9 @@
 export async function uploadToSpaces(file: File, documentId: string): Promise<string> {
-  const bucketName = import.meta.env.VITE_DO_BUCKET || "cadeveloper";
+  const bucketName = (import.meta.env.VITE_DO_BUCKET || "cadeveloper").trim();
   const fileExtension = file.name.split('.').pop();
   const fileName = `ecc-docs/${documentId}.${fileExtension}`;
   
-  const endpoint = import.meta.env.VITE_DO_ENDPOINT || "nyc3.digitaloceanspaces.com";
+  const endpoint = (import.meta.env.VITE_DO_ENDPOINT || "nyc3.digitaloceanspaces.com").trim();
   const cleanEndpoint = endpoint.replace('https://', '').replace('http://', '').replace(/\/$/, '');
   const uploadUrl = `https://${bucketName}.${cleanEndpoint}/${fileName}`;
 
@@ -17,8 +17,8 @@ export async function uploadToSpaces(file: File, documentId: string): Promise<st
       region: "us-east-1", 
       forcePathStyle: false,
       credentials: {
-        accessKeyId: import.meta.env.VITE_DO_ACCESS_KEY || "",
-        secretAccessKey: import.meta.env.VITE_DO_SECRET || "",
+        accessKeyId: (import.meta.env.VITE_DO_ACCESS_KEY || "").trim(),
+        secretAccessKey: (import.meta.env.VITE_DO_SECRET || "").trim(),
       },
     });
 

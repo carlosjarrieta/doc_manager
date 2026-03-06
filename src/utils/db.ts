@@ -6,8 +6,8 @@ import { BaptismCertificate } from './ai';
 // should ONLY be done from a secure Next.js/Vercel serverless API route.
 // For the purpose of this fast MVP demo deployed to Vercel, we can connect using the REST API URL.
 const kv = createClient({
-  url: import.meta.env.VITE_KV_REST_API_URL || '',
-  token: import.meta.env.VITE_KV_REST_API_TOKEN || '',
+  url: (import.meta.env.VITE_KV_REST_API_URL || '').trim(),
+  token: (import.meta.env.VITE_KV_REST_API_TOKEN || '').trim(),
 });
 
 export interface DocumentRecord {
