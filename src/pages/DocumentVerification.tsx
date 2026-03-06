@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FileText, ShieldCheck, Download, QrCode, Maximize, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Copy } from 'lucide-react';
+import { FileCheck, ShieldCheck, Download, QrCode, Maximize, ZoomIn, ZoomOut, ChevronRight, Copy } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { getDocument, DocumentRecord } from '../utils/db';
+import { OfficialCertificate } from '../components/OfficialCertificate';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 const DocumentVerification = () => {
   const { documentId } = useParams<{ documentId: string }>();
@@ -10,6 +13,7 @@ const DocumentVerification = () => {
   const [record, setRecord] = useState<DocumentRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [zoom, setZoom] = useState(1);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,7 +23,7 @@ const DocumentVerification = () => {
         if (docRecord) {
           setRecord(docRecord);
           setData(docRecord.data);
-          console.log("Document loaded:", docRecord.id, "URL:", docRecord.pdfUrl);
+          console.log("Document loaded:", docRecord.id);
         }
       }
       setLoading(false);
@@ -27,6 +31,40 @@ const DocumentVerification = () => {
 
     fetchData();
   }, [documentId]);
+
+  const handleDownloadPDF = async () => {
+    const element = document.getElementById('official-certificate');
+    if (!element) return;
+    
+    setIsGenerating(true);
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2, // Better resolution
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      } as any);
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Certificado_${data?.nombres}_${data?.apellidos}.pdf`);
+    } catch (err) {
+      console.error("Error generating PDF:", err);
+      if (record?.pdfUrl) window.open(record.pdfUrl, '_blank');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -49,42 +87,38 @@ const DocumentVerification = () => {
     );
   }
 
-  const pdfDisplayUrl = record?.pdfUrl;
-  const isImage = pdfDisplayUrl?.match(/\.(jpg|jpeg|png|webp|avif|gif|bmp)$|^data:image\//i);
-  const isLocalBlob = pdfDisplayUrl?.startsWith('blob:');
-
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 3));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.5));
   const handleResetZoom = () => setZoom(1);
 
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden md:overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden md:overflow-hidden font-sans">
       {/* Breadcrumbs & Header */}
       <div className="px-4 md:px-10 py-4 md:py-6 shrink-0">
         <div className="flex items-center gap-2 text-xs md:text-sm text-slate-500 mb-2 font-bold">
           <Link className="hover:text-[var(--color-primary)]" to="/">Registros</Link>
           <ChevronRight className="w-3 h-3" />
-          <span className="text-slate-900">Verificación</span>
+          <span className="text-slate-900">Certificado Digital</span>
         </div>
-        <div>
-          <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight break-all md:break-normal line-clamp-2 md:line-clamp-none">
-            Partida_Bautismo_{data.nombres.split(' ')[0]}.{isImage ? 'img' : 'pdf'}
-          </h1>
-          <p className="text-slate-500 text-xs md:text-sm mt-1 mb-2 font-medium flex flex-wrap gap-1">
-            <span>Validado el {record ? new Date(record.createdAt).toLocaleDateString() : 'Recientemente'}</span>
-            <span className="hidden md:inline">•</span>
-            <span>Documento Válido</span>
-            <span className="hidden md:inline">•</span>
-            <span className="break-all">ID: {documentId}</span>
-          </p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight break-all md:break-normal line-clamp-2 md:line-clamp-none">
+              {data.nombres} {data.apellidos}
+            </h1>
+            <p className="text-slate-500 text-xs md:text-sm mt-1 font-medium flex flex-wrap gap-1">
+              <span>Validado el {record ? new Date(record.createdAt).toLocaleDateString() : 'Recientemente'}</span>
+              <span className="hidden md:inline">•</span>
+              <span className="break-all">ID: {documentId}</span>
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Content Grid */}
       <div className="flex flex-col-reverse lg:flex-row flex-1 gap-4 md:gap-6 px-4 md:px-10 pb-6 md:pb-10 md:overflow-hidden min-h-min">
         
-        {/* Left (Bottom on Mobile): Document Preview */}
-        <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden min-h-[400px] lg:min-h-[600px]">
+        {/* Left: Document View */}
+        <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden min-h-[500px] lg:min-h-[600px]">
           <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-slate-100 shrink-0 bg-white z-10">
             <div className="flex items-center gap-2 md:gap-4">
               <button onClick={handleZoomOut} className="p-2 md:p-1 bg-slate-50 md:bg-transparent hover:bg-slate-100 rounded-lg md:rounded transition-colors" title="Alejar"><ZoomOut className="w-5 h-5 text-slate-600" /></button>
@@ -92,49 +126,23 @@ const DocumentVerification = () => {
               <button onClick={handleZoomIn} className="p-2 md:p-1 bg-slate-50 md:bg-transparent hover:bg-slate-100 rounded-lg md:rounded transition-colors" title="Acercar"><ZoomIn className="w-5 h-5 text-slate-600" /></button>
             </div>
             <div className="flex items-center gap-4 hidden sm:flex">
-              <button className="p-1 hover:bg-slate-100 rounded transition-colors opacity-50 cursor-not-allowed"><ChevronLeft className="w-5 h-5 text-slate-600" /></button>
-              <span className="text-sm font-bold text-slate-600 text-center">Pág 1 de 1</span>
-              <button className="p-1 hover:bg-slate-100 rounded transition-colors opacity-50 cursor-not-allowed"><ChevronRight className="w-5 h-5 text-slate-600" /></button>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <FileCheck className="w-3.5 h-3.5" /> Diseño Oficial Generado
+              </span>
             </div>
             <button onClick={handleResetZoom} className="p-2 md:p-1 bg-slate-50 md:bg-transparent hover:bg-slate-100 rounded-lg md:rounded transition-colors" title="Restablecer"><Maximize className="w-5 h-5 text-slate-600" /></button>
           </div>
-          <div className="flex-1 bg-slate-100 p-2 sm:p-8 overflow-auto flex justify-center items-start">
+          <div className="flex-1 bg-slate-50 p-2 sm:p-4 overflow-auto flex justify-center items-start">
             <div 
-              className="w-full max-w-3xl bg-white shadow-lg overflow-hidden relative transition-transform duration-200 ease-out origin-top"
+              className="relative transition-transform duration-200 ease-out origin-top w-full max-w-[210mm]"
               style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
             >
-              {pdfDisplayUrl ? (
-                isLocalBlob ? (
-                  <div className="flex flex-col items-center justify-center py-20 px-8 text-center bg-amber-50">
-                    <div className="bg-amber-100 p-4 rounded-full mb-4">
-                      <ShieldCheck className="w-12 h-12 text-amber-600" />
-                    </div>
-                    <p className="text-amber-900 font-bold text-lg mb-2">Archivo No Disponible Externamente</p>
-                    <p className="text-amber-700 text-sm max-w-md">
-                      Este documento se guardó solo de forma local porque la subida a la nube falló. 
-                      Para que sea visible en otros dispositivos, intenta registrarlo de nuevo asegurando conexión a internet.
-                    </p>
-                  </div>
-                ) : isImage ? (
-                  <img src={pdfDisplayUrl} alt="Soporte Bautismo" className="w-full h-auto block object-contain" />
-                ) : (
-                  <iframe 
-                    src={`${pdfDisplayUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                    className="w-full h-screen sm:h-[800px] border-none block"
-                    title="Soporte Bautismo"
-                  />
-                )
-              ) : (
-                <div className="flex flex-col items-center justify-center py-40 text-slate-400">
-                  <FileText className="w-16 h-16 mb-4 opacity-20" />
-                  <p className="font-bold">Vista previa no disponible</p>
-                </div>
-              )}
+              <OfficialCertificate data={data} documentId={documentId || ''} />
             </div>
           </div>
         </div>
 
-        {/* Right (Top on Mobile): Share & Details Panel */}
+        {/* Right: Info & Actions */}
         <div className="w-full lg:w-[340px] flex flex-col gap-4 md:gap-6 shrink-0 md:overflow-y-auto pr-1">
           
           <div className="bg-white p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
@@ -175,12 +183,12 @@ const DocumentVerification = () => {
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
               <QrCode className="w-5 h-5 text-[var(--color-primary)]" />
-              Compartir Documento
+              Verificación QR
             </h3>
             <div className="space-y-4">
               <div className="p-4 bg-slate-50 rounded-lg flex flex-col items-center justify-center gap-4 border border-slate-100">
                 <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200">
-                   <div className="w-28 h-28 flex items-center justify-center">
+                   <div className="w-28 h-28 flex items-center justify-center text-slate-900">
                      <QRCodeSVG value={`${window.location.origin}/verify/${documentId}`} size={112} />
                    </div>
                 </div>
@@ -203,21 +211,25 @@ const DocumentVerification = () => {
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
               <Download className="w-5 h-5 text-[var(--color-primary)]" />
-              Download
+              Descargar
             </h3>
             <div className="space-y-2">
-              <a href={pdfDisplayUrl} download target="_blank" rel="noreferrer" className="w-full flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors group cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[var(--color-primary-10)] rounded text-[var(--color-primary)]">
-                    <FileText className="w-5 h-5" />
+              <button 
+                onClick={handleDownloadPDF}
+                disabled={isGenerating}
+                className="w-full flex items-center justify-between p-3 rounded-lg border-2 border-[var(--color-primary)] bg-[var(--color-primary-10)] hover:bg-[var(--color-primary-20)] transition-all group cursor-pointer disabled:opacity-50"
+              >
+                <div className="flex items-center gap-3 text-left">
+                  <div className="p-2 bg-[var(--color-primary)] rounded text-white">
+                    <FileCheck className="w-5 h-5" />
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-black text-slate-900">{isImage ? 'Imagen Original' : 'Documento PDF'}</p>
-                    <p className="text-xs text-slate-500 font-medium">Máxima calidad disponible</p>
+                  <div>
+                    <p className="text-sm font-black text-slate-900">Certificado Oficial</p>
+                    <p className="text-xs text-slate-500 font-medium">{isGenerating ? 'Generando PDF...' : 'PDF Alta Resolución'}</p>
                   </div>
                 </div>
-                <Download className="w-5 h-5 text-slate-400 group-hover:text-[var(--color-primary)] transition-colors" />
-              </a>
+                {!isGenerating && <Download className="w-5 h-5 text-[var(--color-primary)]" />}
+              </button>
             </div>
           </div>
 

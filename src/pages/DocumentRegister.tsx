@@ -8,9 +8,10 @@ import { uploadToSpaces } from '../utils/storage';
 import { saveDocument } from '../utils/db';
 
 const EMPTY_CERTIFICATE: BaptismCertificate = {
-  diocesis: '', parroquia: '', lugar_registro: '', libro: '', folio: '', numero: '',
+  diocesis: '', parroquia: '', lugar_registro: '', lugar_bautismo: '', libro: '', folio: '', numero: '',
   nombres: '', apellidos: '', fecha_nacimiento: '', lugar_nacimiento: '',
-  padre: '', madre: '', padrinos: '', ministro: '', fecha_bautismo: ''
+  padre: '', madre: '', abuelos_paternos: '', abuelos_maternos: '', 
+  padrino: '', madrina: '', sacerdote: '', da_fe: '', fecha_bautismo: '', nota_marginal: ''
 };
 
 const DocumentRegister = () => {
@@ -305,19 +306,39 @@ const DocumentRegister = () => {
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombre de la Madre</label>
-                        <input value={cert.madre} onChange={e => handleFieldChange(index, 'madre', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border(--color-primary)] outline-none transition-all text-sm font-medium" />
+                        <input value={cert.madre} onChange={e => handleFieldChange(index, 'madre', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Abuelos Paternos</label>
+                        <input value={cert.abuelos_paternos} onChange={e => handleFieldChange(index, 'abuelos_paternos', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Abuelos Maternos</label>
+                        <input value={cert.abuelos_maternos} onChange={e => handleFieldChange(index, 'abuelos_maternos', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Padrino</label>
+                        <input value={cert.padrino} onChange={e => handleFieldChange(index, 'padrino', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Madrina</label>
+                        <input value={cert.madrina} onChange={e => handleFieldChange(index, 'madrina', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ministro (Sacerdote)</label>
+                        <input required value={cert.sacerdote} onChange={e => handleFieldChange(index, 'sacerdote', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Da Fe</label>
+                        <input required value={cert.da_fe} onChange={e => handleFieldChange(index, 'da_fe', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombres de Padrinos</label>
-                        <input value={cert.padrinos} onChange={e => handleFieldChange(index, 'padrinos', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ministro (Da Fe)</label>
-                        <input required value={cert.ministro} onChange={e => handleFieldChange(index, 'ministro', e.target.value)} type="text" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
-                      </div>
-                      <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Fecha de Bautismo</label>
                         <input required value={cert.fecha_bautismo} onChange={e => handleFieldChange(index, 'fecha_bautismo', e.target.value)} type="text" placeholder="YYYY-MM-DD" className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nota Marginal</label>
+                        <textarea rows={3} value={cert.nota_marginal} onChange={e => handleFieldChange(index, 'nota_marginal', e.target.value)} className="w-full rounded-lg border-slate-200 border px-4 py-2.5 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] outline-none transition-all text-sm font-medium resize-none" />
                       </div>
                     </div>
                   </section>
