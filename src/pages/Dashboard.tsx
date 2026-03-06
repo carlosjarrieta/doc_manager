@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Download, QrCode, Link as LinkIcon, Star, Eye, X, Check, Trash2 } from 'lucide-react';
+import { FileText, QrCode, Link as LinkIcon, Star, Eye, X, Check, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { listDocuments, deleteDocument, DocumentRecord } from '../utils/db';
 import { useSearch } from '../App';
@@ -144,15 +144,14 @@ const Dashboard = () => {
                   </div>
                   
                   <div className="grid grid-cols-3 gap-2 mt-auto">
-                    <a 
-                      href={doc.pdfUrl || '#'} 
-                      download 
+                    <Link 
+                      to={`/verify/${doc.id}`}
                       className="flex flex-col items-center justify-center py-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100 text-slate-600 group/btn"
-                      title="Descargar Original"
+                      title="Ver Certificado"
                     >
-                      <Download className="w-3.5 h-3.5 mb-1 group-hover/btn:-translate-y-0.5 transition-transform" />
-                      <span className="text-[8px] font-black uppercase tracking-tighter">Bajar</span>
-                    </a>
+                      <Eye className="w-3.5 h-3.5 mb-1 group-hover/btn:-translate-y-0.5 transition-transform" />
+                      <span className="text-[8px] font-black uppercase tracking-tighter">Ver</span>
+                    </Link>
                     <button 
                       onClick={() => setSelectedDoc(doc)}
                       className="flex flex-col items-center justify-center py-2 rounded-lg bg-slate-50 hover:bg-[var(--color-primary-10)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary-10)] transition-colors border border-slate-100 text-slate-600 group/btn"

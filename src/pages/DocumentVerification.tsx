@@ -38,29 +38,34 @@ const DocumentVerification = () => {
     
     setIsGenerating(true);
     try {
+      // Small delay to ensure everything is rendered
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const canvas = await html2canvas(element, {
-        scale: 2, // Better resolution
+        scale: 3, // Even better resolution
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
       } as any);
       
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
       
-      const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      // Calculate dimensions to fit A4 exactly
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
       pdf.save(`Certificado_${data?.nombres}_${data?.apellidos}.pdf`);
     } catch (err) {
       console.error("Error generating PDF:", err);
-      if (record?.pdfUrl) window.open(record.pdfUrl, '_blank');
+      alert("Hubo un error al generar el PDF profesional. Por favor, intenta de nuevo o contacta a soporte.");
     } finally {
       setIsGenerating(false);
     }
